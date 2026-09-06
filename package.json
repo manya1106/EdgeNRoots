@@ -1,0 +1,52 @@
+{
+  "name": "insurance-policy-accounting",
+  "version": "1.0.0",
+  "description": "Insurance Policy & Accounting Module - Node.js, Express & MySQL",
+  "main": "backend/src/server.js",
+  "scripts": {
+    "start": "node backend/src/server.js",
+    "dev": "nodemon backend/src/server.js",
+    "dev:frontend": "npm run dev --prefix frontend",
+    "test": "jest --runInBand --detectOpenHandles --forceExit",
+    "test:backend": "playwright test --project=backend",
+    "test:frontend": "playwright test --project=frontend",
+    "test:e2e": "playwright test",
+    "db:init": "node backend/scripts/initDb.js",
+    "db:validate": "node backend/scripts/runValidationQueries.js"
+  },
+  "keywords": [
+    "insurance",
+    "accounting",
+    "double-entry",
+    "fintech",
+    "express",
+    "mysql"
+  ],
+  "author": "Engineering Team",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^8.0.0",
+    "joi": "^17.13.3",
+    "mysql2": "^3.12.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.50.1",
+    "@types/node": "^22.13.4",
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.9",
+    "supertest": "^7.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/tests/**/*.test.js"
+    ],
+    "testTimeout": 30000
+  }
+}

@@ -1,0 +1,295 @@
+{
+  "info": {
+    "name": "Insurance Policy & Accounting Module API",
+    "_postman_id": "8f395c37-124b-4c7b-bbf2-ee6e40995fa1",
+    "description": "Comprehensive Postman collection covering all positive workflows and failure/negative scenarios for the Insurance Policy & Double-Entry Accounting module.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "customerId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "policyId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "paymentId",
+      "value": "1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Customers",
+      "item": [
+        {
+          "name": "POST /customers - Create Customer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Aditya Kumar\",\n  \"email\": \"aditya.kumar@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customers",
+              "host": ["{{baseUrl}}"],
+              "path": ["customers"]
+            },
+            "description": "Creates a new customer record."
+          }
+        },
+        {
+          "name": "GET /customers - List All Customers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/customers",
+              "host": ["{{baseUrl}}"],
+              "path": ["customers"]
+            }
+          }
+        },
+        {
+          "name": "GET /customers/:id - Get Customer By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/customers/{{customerId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["customers", "{{customerId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Policies",
+      "item": [
+        {
+          "name": "POST /policies - Create Policy & Book Ledger",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customer_id\": {{customerId}},\n  \"policy_number\": \"POL-2026-AUTO-001\",\n  \"premium_amount\": 10000.00,\n  \"gst_rate\": 18.00\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/policies",
+              "host": ["{{baseUrl}}"],
+              "path": ["policies"]
+            },
+            "description": "Books a policy atomically with double-entry: Debit AR 11,800, Credit Income 10,000, Credit GST 1,800."
+          }
+        },
+        {
+          "name": "GET /policies/:id - Get Policy With Customer Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/policies/{{policyId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["policies", "{{policyId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Payments & Reversals",
+      "item": [
+        {
+          "name": "POST /payments - Record Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"policy_id\": {{policyId}},\n  \"amount\": 5000.00\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/payments",
+              "host": ["{{baseUrl}}"],
+              "path": ["payments"]
+            },
+            "description": "Records payment with pessimistic row lock (FOR UPDATE): Debit Cash 5,000, Credit AR 5,000."
+          }
+        },
+        {
+          "name": "POST /payments/:id/reversal - Reverse Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Duplicate bank transaction initiated by customer\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/payments/{{paymentId}}/reversal",
+              "host": ["{{baseUrl}}"],
+              "path": ["payments", "{{paymentId}}", "reversal"]
+            },
+            "description": "Insert-only reversal of payment: Debit AR 5,000, Credit Cash 5,000 without mutating original row."
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Ledger & Summaries",
+      "item": [
+        {
+          "name": "GET /policies/:id/ledger - Policy Ledger Entries",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/policies/{{policyId}}/ledger",
+              "host": ["{{baseUrl}}"],
+              "path": ["policies", "{{policyId}}", "ledger"]
+            },
+            "description": "Retrieves the full chronological immutable audit trail of double-entry ledger postings."
+          }
+        },
+        {
+          "name": "GET /policies/:id/summary - Dynamic Ledger Summary",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/policies/{{policyId}}/summary",
+              "host": ["{{baseUrl}}"],
+              "path": ["policies", "{{policyId}}", "summary"]
+            },
+            "description": "Dynamically calculates total_paid and outstanding balance strictly from ledger entries."
+          }
+        },
+        {
+          "name": "GET /accounting/validate - Run 4 Audit Integrity Checks",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/accounting/validate",
+              "host": ["{{baseUrl}}"],
+              "path": ["accounting", "validate"]
+            },
+            "description": "Executes the 4 accounting queries (unbalanced, orphans, negative balances, and trial balance)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Negative Tests (Failure Scenarios)",
+      "item": [
+        {
+          "name": "Negative - Customer Missing Required Name (400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"noname@example.com\"\n}" },
+            "url": { "raw": "{{baseUrl}}/customers", "host": ["{{baseUrl}}"], "path": ["customers"] }
+          }
+        },
+        {
+          "name": "Negative - Customer Duplicate Email (409)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Aditya Duplicate\",\n  \"email\": \"aditya.kumar@example.com\"\n}" },
+            "url": { "raw": "{{baseUrl}}/customers", "host": ["{{baseUrl}}"], "path": ["customers"] }
+          }
+        },
+        {
+          "name": "Negative - Policy Invalid Customer ID (404)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customer_id\": 999999,\n  \"policy_number\": \"POL-INVALID-999\",\n  \"premium_amount\": 10000.00\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/policies", "host": ["{{baseUrl}}"], "path": ["policies"] }
+          }
+        },
+        {
+          "name": "Negative - Policy Duplicate Policy Number (409)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customer_id\": {{customerId}},\n  \"policy_number\": \"POL-2026-AUTO-001\",\n  \"premium_amount\": 5000.00\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/policies", "host": ["{{baseUrl}}"], "path": ["policies"] }
+          }
+        },
+        {
+          "name": "Negative - Policy Negative Premium (400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customer_id\": {{customerId}},\n  \"policy_number\": \"POL-NEG-001\",\n  \"premium_amount\": -2500.00\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/policies", "host": ["{{baseUrl}}"], "path": ["policies"] }
+          }
+        },
+        {
+          "name": "Negative - Payment Overpayment Exceeding Outstanding (400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"policy_id\": {{policyId}},\n  \"amount\": 9999999.00\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/payments", "host": ["{{baseUrl}}"], "path": ["payments"] }
+          }
+        },
+        {
+          "name": "Negative - Reverse Non-Existent Payment (404)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{}" },
+            "url": { "raw": "{{baseUrl}}/payments/999999/reversal", "host": ["{{baseUrl}}"], "path": ["payments", "999999", "reversal"] }
+          }
+        }
+      ]
+    }
+  ]
+}
